@@ -1,0 +1,241 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RaccKandi — Bright + Whimsical</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#fff7ff; --paper:#fffdf6; --accent1:#ff7ad1; --accent2:#ffd36b; --ink:#2b2b2b;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;font-family:"Rubik",system-ui,Arial;background:
+      radial-gradient(circle at 10% 10%, rgba(255,122,209,0.08), transparent 10%),
+      var(--bg); color:var(--ink);
+    }
+    header{display:flex;align-items:center;gap:12px;padding:20px 28px;border-bottom:2px dashed rgba(0,0,0,0.06)}
+    .logo{display:flex;gap:12px;align-items:center}
+    .k{width:60px;height:60px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;transform:rotate(-6deg)}
+    h1{font-size:20px;margin:0}
+    .wrap{max-width:1180px;margin:26px auto;padding:18px;display:grid;grid-template-columns:1fr 320px;gap:20px}
+    .board{background:var(--paper);padding:18px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.06)}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    .search input{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);width:100%}
+    .product-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+    .card{background:linear-gradient(180deg,#fff,#fffaf3);padding:12px;border-radius:12px;border:1px dashed rgba(0,0,0,0.04)}
+    .imgwrap{height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;margin-bottom:8px}
+    .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .price{font-weight:700;margin:8px 0}
+    label.small{font-size:13px;color:#444;margin-top:8px;display:block}
+    input[type="text"],input[type="email"],textarea,input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    .sticker-strip{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+    .sticker{cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;}
+    .btn{padding:8px 10px;border-radius:10px;border:0;background:linear-gradient(180deg,var(--accent1),#ff63c0);color:#fff;font-weight:700;cursor:pointer}
+    aside .panel{background:#fff;padding:12px;border-radius:10px;box-shadow:0 8px 16px rgba(0,0,0,0.04)}
+    footer{text-align:center;padding:12px;color:#666;margin-top:22px}
+    /* sticker animation container */
+    .fx-layer{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:9999}
+    .fx{position:absolute;font-size:26px;opacity:0;transform:translateY(0) scale(0.8);transition:all 900ms cubic-bezier(.2,.9,.2,1)}
+    /* responsive */
+    @media(max-width:980px){.wrap{grid-template-columns:1fr;padding:12px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><div class="k">RACCK</div><div><h1>RaccKandi</h1><div style="font-size:12px;color:#666">Quality • Custom • Fun</div></div></div>
+  </header>
+
+  <main class="wrap">
+    <section class="board">
+      <h2 style="font-family:'Rubik';margin-top:0">Products</h2>
+
+      <div class="controls">
+        <div class="search" style="flex:1"><input id="search" placeholder="Search products (star, doll, lizard...)"></div>
+      </div>
+
+      <div class="product-grid" id="product-grid">
+        <!-- product cards injected here -->
+      </div>
+
+      <!-- Pricing section -->
+      <div style="margin-top:18px;padding:12px;border-radius:10px;border:1px dashed rgba(0,0,0,0.04);background:#fff;margin-bottom:10px">
+        <h3 style="margin:0 0 8px 0">How pricing works</h3>
+        <ul style="margin:0;padding-left:18px;color:#444">
+          <li>Tiny bead dolls — <strong>$45</strong></li>
+          <li>Normal sized doll — <strong>$25–$35</strong> (depending on complexity)</li>
+          <li>Stars — small $3 • big $5 • glove $7</li>
+          <li>Lizards — starting at <strong>$10+</strong></li>
+          <li>Animals — <strong>$15</strong></li>
+          <li>Bracelets — <strong>$6 each</strong> or <strong>2 for $10</strong></li>
+          <li>Each package includes <strong>3 free stickers</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <aside>
+      <div class="panel">
+        <h3 style="margin-top:0">Your Request</h3>
+        <div style="font-size:13px;color:#444">Fill a request from any product card — it will be saved to your store's requests. You (owner) can accept or deny them from the admin dashboard.</div>
+        <div style="height:12px"></div>
+        <div style="font-size:13px;color:#666">Admin: <button class="btn" onclick="window.location='admin.html'">Open Admin (owners only)</button></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="fx-layer" id="fx-layer"></div>
+
+  <footer>&copy; 2025 RaccKandi — Handcrafted bead goodies • Every order includes 3 free stickers</footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+ const firebaseConfig = {
+  apiKey: "AIzaSyAz8PvVFDbyJvOHZ_JlU9P7Jn_RhIEkido",
+  authDomain: "racc-kandi.firebaseapp.com",
+  projectId: "racc-kandi",
+  storageBucket: "racc-kandi.firebasestorage.app",
+  messagingSenderId: "397390947545",
+  appId: "1:397390947545:web:cd0d90b869fb78b2824ac8",
+  measurementId: "G-1SQJDV0NZH"
+};  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // products list and images (change image paths to match your images/ folder)
+  const PRODUCTS = [
+    { id:'star', title:'Bead Star', price:'3-7', img:'images/bead-star.jpg', note:'small $3, big $5, glove $7' },
+    { id:'tiny-doll', title:'Tiny Bead Doll', price:'45', img:'images/custom-doll.jpg', note:'Tiny doll — $45' },
+    { id:'normal-doll', title:'Normal Bead Doll', price:'25-35', img:'images/custom-doll.jpg', note:'Normal doll — $25–35' },
+    { id:'lizard', title:'Bead Lizard', price:'10+', img:'images/bead-lizard.jpg', note:'Starting at $10' },
+    { id:'animal', title:'Bead Animal', price:'15', img:'images/bead-animal.jpg', note:'Custom animals — $15' },
+    { id:'bracelet', title:'Custom Bracelet', price:'6 (2 for 10)', img:'images/bead-bracelet.jpg', note:'$6 each, 2 for $10' }
+  ];
+
+  const productGrid = document.getElementById('product-grid');
+  const fxLayer = document.getElementById('fx-layer');
+
+  // helper: spawn a random sticker emoji at an x,y position
+  function spawnSticker(x, y){
+    const stickers = ['✨','🌈','🎀','🩷','⭐','🦄','🍬','🌟'];
+    const el = document.createElement('div');
+    el.className = 'fx';
+    el.style.left = (x - 12) + 'px';
+    el.style.top = (y - 12) + 'px';
+    el.innerText = stickers[Math.floor(Math.random()*stickers.length)];
+    fxLayer.appendChild(el);
+    // animate
+    requestAnimationFrame(()=> {
+      el.style.opacity=1;
+      el.style.transform = 'translateY(-80px) scale(1.4)';
+    });
+    setTimeout(()=>{ el.style.opacity=0; el.style.transform='translateY(-140px) scale(0.6)'; }, 600);
+    setTimeout(()=> el.remove(), 1300);
+  }
+
+  // build product cards
+  function renderProducts(filter=''){
+    productGrid.innerHTML='';
+    PRODUCTS.filter(p => (p.title + ' ' + (p.note||'')).toLowerCase().includes(filter.toLowerCase()))
+      .forEach(p=>{
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `
+          <div class="imgwrap"><img src="${p.img}" alt="${p.title}" onerror="this.style.opacity=.25"></div>
+          <h3 style="margin:6px 0 4px 0">${p.title}</h3>
+          <div class="price">$${p.price}</div>
+          <div style="color:#555;font-size:13px">${p.note || ''}</div>
+          <label class="small">Your contact (email or handle)</label>
+          <input type="email" class="contact" placeholder="you@example.com or @yourname">
+          <label class="small">Quantity</label>
+          <input type="number" class="qty" min="1" value="1">
+          <label class="small">Choose primary color</label>
+          <input type="color" class="color" value="#ff7ad1">
+          <label class="small">Customization (colors, details, name)</label>
+          <input type="text" class="custom" placeholder="e.g. pink hair, glitter eyes, name: Miso">
+          <div class="sticker-strip">
+            <div class="sticker" data-sticker="✨">✨</div>
+            <div class="sticker" data-sticker="🌈">🌈</div>
+            <div class="sticker" data-sticker="🎀">🎀</div>
+            <div class="sticker" data-sticker="🩷">🩷</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn submit">Request Order</button>
+            <button class="btn" style="background:#f1f1f1;color:#444" class="preview">Preview</button>
+          </div>
+        `;
+        // sticker clicks append emoji into the custom text and spawn fx
+        card.querySelectorAll('.sticker').forEach(s=>{
+          s.addEventListener('click', (ev)=>{
+            const v = s.dataset.sticker;
+            const input = card.querySelector('.custom');
+            input.value = (input.value ? input.value + ' ' : '') + v;
+            // spawn at click position
+            spawnSticker(ev.clientX, ev.clientY);
+          });
+        });
+
+        // clicking anywhere on the card should spawn a random sticker too
+        card.addEventListener('click', (ev)=>{
+          // avoid spawning when clicking inputs/buttons
+          const tag = ev.target.tagName.toLowerCase();
+          if(['input','textarea','button','select','label'].includes(tag)) return;
+          spawnSticker(ev.clientX, ev.clientY);
+        });
+
+        // submit
+        card.querySelector('.submit').addEventListener('click', async ()=>{
+          const contact = card.querySelector('.contact').value.trim();
+          const qty = parseInt(card.querySelector('.qty').value || '1',10);
+          const color = card.querySelector('.color').value;
+          const custom = card.querySelector('.custom').value.trim();
+
+          if(!contact){
+            alert('Please provide a contact email or social handle so you can be reached about the request.');
+            return;
+          }
+
+          const data = {
+            productId: p.id,
+            title: p.title,
+            contact,
+            qty,
+            color,
+            custom,
+            status: 'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          try{
+            await db.collection('requests').add(data);
+            alert('Request submitted! The owner will review it soon. Thank you ❤️');
+            // clear fields
+            card.querySelector('.contact').value='';
+            card.querySelector('.custom').value='';
+          }catch(err){
+            console.error(err);
+            alert('Failed to submit request. Check console and ensure Firebase config is set and Firestore is enabled.');
+          }
+        });
+
+        productGrid.appendChild(card);
+      });
+  }
+
+  // search
+  document.getElementById('search').addEventListener('input', e=>{
+    renderProducts(e.target.value);
+  });
+
+  // initial render
+  renderProducts();
+
+  </script>
+</body>
+</html>
