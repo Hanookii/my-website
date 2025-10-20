@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RaccKandi — Admin</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:0;background:#fff7ff;color:#222}
+    header{padding:18px;background:linear-gradient(90deg,#ffd6ea,#fff4cc);display:flex;align-items:center;justify-content:space-between}
+    header h1{margin:0;font-size:18px}
+    .container{max-width:1200px;margin:18px auto;padding:16px}
+    .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 8px 20px rgba(0,0,0,0.04)}
+    .req{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .req .left{flex:1}
+    .pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(0,0,0,0.06)}
+    .btn{padding:8px 10px;border-radius:10px;border:0;background:#ff7ad1;color:#fff;cursor:pointer}
+    .btn.ghost{background:#fff;border:1px solid #ddd;color:#444}
+    .auth{display:flex;gap:8px;align-items:center}
+    input[type="email"],input[type="password"]{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+  </style>
+</head>
+<body>
+  <header><h1>RaccKandi — Admin</h1>
+    <div class="auth">
+      <input id="admin-email" placeholder="email" type="email">
+      <input id="admin-pass" placeholder="password" type="password">
+      <button id="sign-in" class="btn">Sign In</button>
+      <button id="sign-out" class="btn ghost">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="status" class="card">Status: <span id="stat-text">Not signed in</span></div>
+    <div id="requests"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyAz8PvVFDbyJvOHZ_JlU9P7Jn_RhIEkido",
+  authDomain: "racc-kandi.firebaseapp.com",
+  projectId: "racc-kandi",
+  storageBucket: "racc-kandi.firebasestorage.app",
+  messagingSenderId: "397390947545",
+  appId: "1:397390947545:web:cd0d90b869fb78b2824ac8",
+  measurementId: "G-1SQJDV0NZH"
+};
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // IMPORTANT: Get your OWNER UID after creating your admin account and signing in once.
+  // Replace the placeholder below with your actual Firebase UID (string).
+  const OWNER_UID = "foo0KZOvEHbph1jJW1xRCGQJOje2";
+
+  const signInBtn = document.getElementById('sign-in');
+  const signOutBtn = document.getElementById('sign-out');
+  const emailInput = document.getElementById('admin-email');
+  const passInput = document.getElementById('admin-pass');
+  const statText = document.getElementById('stat-text');
+  const requestsEl = document.getElementById('requests');
+
+  signInBtn.addEventListener('click', async ()=>{
+    try{
+      const email = emailInput.value.trim();
+      const pw = passInput.value;
+      if(!email || !pw) return alert('enter email & password');
+      await auth.signInWithEmailAndPassword(email, pw);
+    }catch(err){
+      // try sign up if sign in fails (optional)
+      if(confirm('Sign-in failed. Create new account with these credentials?')){
+        try{
+          await auth.createUserWithEmailAndPassword(emailInput.value.trim(), passInput.value);
+        }catch(e){ alert('Failed to create account: '+e.message) }
+      }else console.error(err);
+    }
+  });
+
+  signOutBtn.addEventListener('click', ()=> auth.signOut());
+
+  // auth state
+  auth.onAuthStateChanged(async user=>{
+    if(user){
+      statText.innerText = `Signed in as ${user.email} (uid: ${user.uid})`;
+      // check owner
+      if(user.uid !== OWNER_UID){
+        statText.innerText += ' — NOT OWNER (no access)';
+        requestsEl.innerHTML = '<div class="card">You are not the owner. Only the owner can view requests.</div>';
+        return;
+      }
+      // owner: show all pending requests
+      loadRequests();
+    }else{
+      statText.innerText = 'Not signed in';
+      requestsEl.innerHTML = '<div class="card">Sign in with the owner account to see requests.</div>';
+    }
+  });
+
+  // load requests from Firestore and render
+  function loadRequests(){
+    requestsEl.innerHTML = '<div class="card">Loading requests...</div>';
+    db.collection('requests').orderBy('createdAt','desc').onSnapshot(snapshot=>{
+      const docs = snapshot.docs;
+      if(!docs.length){
+        requestsEl.innerHTML = '<div class="card">No requests yet.</div>';
+        return;
+      }
+      requestsEl.innerHTML = '';
+      docs.forEach(doc=>{
+        const r = doc.data();
+        const id = doc.id;
+        const card = document.createElement('div'); card.className='card req';
+        const left = document.createElement('div'); left.className='left';
+        left.innerHTML = `<strong>${r.title || r.productId}</strong><div style="color:#666;font-size:13px">Contact: ${r.contact || 'N/A'} • Qty: ${r.qty || 1}</div>
+        <div style="margin-top:6px">${(r.custom||'')}<div style="color:#999;font-size:12px;margin-top:6px">Created: ${r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleString() : ''}</div></div>`;
+        const right = document.createElement('div');
+        const statusPill = document.createElement('div'); statusPill.className='pill'; statusPill.innerText = (r.status || 'pending').toUpperCase();
+        right.appendChild(statusPill);
+        right.innerHTML += '<div style="height:8px"></div>';
+        const acceptBtn = document.createElement('button'); acceptBtn.className='btn'; acceptBtn.innerText='Accept';
+        const denyBtn = document.createElement('button'); denyBtn.className='btn ghost'; denyBtn.innerText='Deny';
+        acceptBtn.addEventListener('click', ()=> updateStatus(id,'accepted'));
+        denyBtn.addEventListener('click', ()=> updateStatus(id,'denied'));
+        right.appendChild(acceptBtn); right.appendChild(denyBtn);
+        card.appendChild(left); card.appendChild(right);
+        requestsEl.appendChild(card);
+      });
+    }, err => { requestsEl.innerHTML = '<div class="card">Error loading requests: '+err.message+'</div>' });
+  }
+
+  // update status
+  function updateStatus(id, status){
+    db.collection('requests').doc(id).update({ status }).then(()=> alert('Updated')).catch(e=> alert('Failed: '+e.message));
+  }
+
+  </script>
+</body>
+</html>
